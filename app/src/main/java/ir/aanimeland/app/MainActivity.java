@@ -1,5 +1,6 @@
 package ir.aanimeland.app;
 
+import android.content.Intent;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.graphics.Bitmap;
@@ -96,12 +97,22 @@ public class MainActivity extends Activity {
         }
     }
 
-    private boolean isNetworkAvailable() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null && activeNetwork.isConnected();
+    @Override
+    public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+    String url = request.getUrl().toString();
+    
+    // لینک‌های دانلود رو با مرورگر باز کن
+    if (url.endsWith(".mp4") || url.endsWith(".mkv") || 
+        url.endsWith(".avi") || url.endsWith(".m3u8") ||
+        url.contains("download") || url.contains("dl.")) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+        startActivity(intent);
+        return true;
     }
-
+    
+    // بقیه لینک‌ها داخل WebView باز بشن
+    return false;
+}
     @Override
     public void onBackPressed() {
         if (webView.canGoBack()) webView.goBack();
