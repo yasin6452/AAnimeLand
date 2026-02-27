@@ -1,11 +1,12 @@
 package ir.aanimeland.app;
 
-import android.content.Intent;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.webkit.WebChromeClient;
@@ -69,6 +70,18 @@ public class MainActivity extends Activity {
 
             @Override
             public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                if (url.endsWith(".mp4") || url.endsWith(".mkv") ||
+                    url.endsWith(".avi") || url.endsWith(".m3u8") ||
+                    url.contains("/download/") || url.startsWith("intent://")) {
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                    return true;
+                }
                 return false;
             }
         });
@@ -86,7 +99,11 @@ public class MainActivity extends Activity {
     }
 
     private void loadWebsite() {
-        if (isNetworkAvailable()) {
+        ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean connected = activeNetwork != null && activeNetwork.isConnected();
+
+        if (connected) {
             errorLayout.setVisibility(View.GONE);
             webView.setVisibility(View.VISIBLE);
             webView.loadUrl(SITE_URL);
@@ -97,22 +114,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    @Override
-    public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-    String url = request.getUrl().toString();
-    
-    // لینک‌های دانلود رو با مرورگر باز کن
-    if (url.endsWith(".mp4") || url.endsWith(".mkv") || 
-        url.endsWith(".avi") || url.endsWith(".m3u8") ||
-        url.contains("download") || url.contains("dl.")) {
-        Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
-        startActivity(intent);
-        return true;
-    }
-    
-    // بقیه لینک‌ها داخل WebView باز بشن
-    return false;
-}
     @Override
     public void onBackPressed() {
         if (webView.canGoBack()) webView.goBack();
