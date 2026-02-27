@@ -29,7 +29,3 @@ android {
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
 }
-
-configurations.all {
-    resolutionStrategy.force 'androidx.appcompat:appcompat:1.6.1'
-}
